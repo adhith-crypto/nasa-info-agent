@@ -1,16 +1,11 @@
 import requests
 
-
 PDS_URL = "https://pds.nasa.gov/api/search/1/products"
 
 
 def search_nasa(query: str):
-    """
-    Search NASA's Planetary Data System for relevant datasets.
-    """
-
     params = {
-        "keywords": query,
+        "q": query,
         "limit": 10
     }
 
@@ -35,7 +30,6 @@ def search_nasa(query: str):
     for item in data.get("data", []):
         results.append({
             "title": item.get("title"),
-            "description": item.get("description"),
             "identifier": item.get("lidvid"),
             "start_time": item.get("start_date_time"),
             "target": item.get("target_name"),

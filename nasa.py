@@ -1,30 +1,46 @@
 import requests
 
 
+PDS_URL = "https://pds.nasa.gov/api/search/1/products"
+
+
 def search_nasa(query: str):
-    url = "https://images-api.nasa.gov/search"
+    """
+    Search NASA's Planetary Data System for relevant datasets.
+    """
 
     params = {
-        "q": query,
-        "media_type": "image"
+        "keywords": query,
+        "limit": 10
     }
 
-    response = requests.get(url, params=params, timeout=20)
-    response.raise_for_status()
+    try:
+        response = requests.get(
+            PDS_URL,
+            params=params,
+            headers={"Accept": "application/json"},
+            timeout=30
+        )
 
-    data = response.json()
+        response.raise_for_status()
+        data = response.json()
+
+    except requests.RequestException as e:
+        return [{
+            "error": f"NASA PDS request failed: {str(e)}"
+        }]
 
     results = []
 
-    for item in data.get("collection", {}).get("items", [])[:5]:
-        info = item.get("data", [{}])[0]
-
+    for item in data.get("data", []):
         results.append({
-            "title": info.get("title"),
-            "description": info.get("description"),
-            "date_created": info.get("date_created"),
-            "nasa_id": info.get("nasa_id"),
-            "center": info.get("center")
+            "title": item.get("title"),
+            "description": item.get("description"),
+            "identifier": item.get("lidvid"),
+            "start_time": item.get("start_date_time"),
+            "target": item.get("target_name"),
+            "instrument": item.get("instrument_name"),
+            "source": "NASA Planetary Data System"
         })
 
     return results
